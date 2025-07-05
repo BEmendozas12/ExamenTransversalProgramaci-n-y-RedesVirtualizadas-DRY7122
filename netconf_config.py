@@ -19,17 +19,17 @@ nuevo_hostname = """
 """
 conexion.edit_config(target='running', config=nuevo_hostname)
 
-# Crear interfaz loopback 111 con IP 111.111.111.111/32
-loopback_111 = """
+# Crear interfaz loopback 111 con IP 11.11.11.11/32
+loopback_11 = """
 <config>
   <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
     <interface>
       <Loopback>
-        <name>111</name>
+        <name>11</name>
         <ip>
           <address>
             <primary>
-              <address>111.111.111.111</address>
+              <address>11.11.11.11</address>
               <mask>255.255.255.255</mask>
             </primary>
           </address>
