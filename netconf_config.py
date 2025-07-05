@@ -5,7 +5,7 @@ conexion = manager.connect(
     host="192.168.56.101",  # IP del router
     port=830,               # Puerto NETCONF por defecto
     username="cisco",
-    password="cisco",
+    password="cisco123",
     hostkey_verify=False
 )
 
