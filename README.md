@@ -1,2 +1,2 @@
 # ExamenTransversalProgramaci-n-y-RedesVirtualizadas-DRY7122
-Proyecto de Duoc.
+Archivos Examen Transversal DRY7122
