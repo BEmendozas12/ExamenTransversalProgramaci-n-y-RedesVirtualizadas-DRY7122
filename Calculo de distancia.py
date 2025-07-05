@@ -8,7 +8,7 @@ def calcular_ruta(origen, destino, transporte):
         "vehicle": transporte,
         "locale": "es",
         "instructions": "true",
-        "key": "TU_API_KEY"
+        "key": "6af69be1-508f-46ac-91b2-49a5ebb12c8e"
     }
 
     respuesta = requests.get(url, params=parametros)
