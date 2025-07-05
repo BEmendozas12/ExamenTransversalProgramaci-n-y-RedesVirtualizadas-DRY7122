@@ -39,7 +39,7 @@ loopback_11 = """
   </native>
 </config>
 """
-conexion.edit_config(target='running', config=loopback_111)
+conexion.edit_config(target='running', config=loopback_11)
 
 print("Configuración aplicada exitosamente.")
 conexion.close_session()
