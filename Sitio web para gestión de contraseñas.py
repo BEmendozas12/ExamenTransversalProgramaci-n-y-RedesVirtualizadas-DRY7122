@@ -1,31 +1,83 @@
-# servidor_web.py
-from flask import Flask, request
-import hashlib, sqlite3
+from flask import Flask, request, redirect, render_template_string
+import sqlite3
+import hashlib
 
+# Crear la base de datos SQLite
+def crear_base_datos():
+    conn = sqlite3.connect('usuarios.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+# Insertar usuarios (nombres de los integrantes + contraseña)
+def insertar_usuario(nombre, password):
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    try:
+        with sqlite3.connect('usuarios.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO usuarios (nombre, password_hash) VALUES (?, ?)', (nombre, password_hash))
+            conn.commit()
+    except sqlite3.IntegrityError:
+        print(f"El usuario '{nombre}' ya existe.")
+
+
+# Validar credenciales
+def validar_usuario(nombre, password):
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    with sqlite3.connect('usuarios.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM usuarios WHERE nombre = ? AND password_hash = ?', (nombre, password_hash))
+        usuario = cursor.fetchone()
+    return usuario is not None
+
+
+# Crear la base y añadir usuarios (integrantes del examen)
+crear_base_datos()
+# Cambia los nombres y contraseñas según los integrantes reales:
+insertar_usuario("benjamin", "clave123")
+insertar_usuario("lucila", "secreto456")
+insertar_usuario("Charmayne", "password789")
+
+# Crear la app Flask
 app = Flask(__name__)
 
-# Crear o conectar base de datos
-conexion = sqlite3.connect('usuarios.db', check_same_thread=False)
-cursor = conexion.cursor()
-cursor.execute("CREATE TABLE IF NOT EXISTS usuarios (nombre TEXT, clave_hash TEXT)")
+# HTML sencillo de inicio de sesión
+login_html = '''
+<!DOCTYPE html>
+<html>
+<head><title>Login de Usuarios</title></head>
+<body>
+    <h2>Inicio de Sesión</h2>
+    <form method="POST">
+        Nombre: <input type="text" name="nombre"><br>
+        Contraseña: <input type="password" name="password"><br>
+        <button type="submit">Ingresar</button>
+    </form>
+    {% if mensaje %}
+    <p>{{ mensaje }}</p>
+    {% endif %}
+</body>
+</html>
+'''
 
-# Crear usuarios
-usuarios = {"Lucila": "Duoc2025", "Charmayne": "Duoc2025", "Alejandra": "Duoc2025", "Benjamin": "Duoc2025"}
-for nombre, clave in usuarios.items():
-    clave_hash = hashlib.sha256(clave.encode()).hexdigest()
-    cursor.execute("INSERT INTO usuarios VALUES (?, ?)", (nombre, clave_hash))
-conexion.commit()
-
-# Ruta para validar acceso
-@app.route('/login', methods=['POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    datos = request.json
-    nombre = datos['usuario']
-    clave_hash = hashlib.sha256(datos['clave'].encode()).hexdigest()
-    cursor.execute("SELECT * FROM usuarios WHERE nombre=? AND clave_hash=?", (nombre, clave_hash))
-    if cursor.fetchone():
-        return {"estado": "Acceso permitido"}
-    else:
-        return {"estado": "Acceso denegado"}
+    mensaje = ''
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        password = request.form['password']
+        if validar_usuario(nombre, password):
+            mensaje = f'¡Bienvenido, {nombre}!'
+        else:
+            mensaje = 'Credenciales incorrectas.'
+    return render_template_string(login_html, mensaje=mensaje)
 
-app.run(port=7500)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5800, debug=True)
